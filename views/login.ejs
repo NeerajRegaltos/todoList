@@ -11,24 +11,37 @@
         integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1" crossorigin="anonymous">
 
     <title>Tiudo - Login</title>
+    <link rel="stylesheet" href="/css/login.css">
     <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
 </head>
 
-<body style="background-color: rgb(98, 238, 203);">
-    <div class="container" style="display: flex; justify-content: center; margin-top: 20px;">
+<body>
+    <div class="container flex">
 
-        <form method="post" style="display: flex; flex-direction: column;">
-            <h1>Login</h1>
 
-            <%= locals.errorMessage  %> 
 
-            <input type="email" placeholder="email" name="email" required style="text-transform: lowercase; width: 100%; margin: 10px 5px;">
-            <input type="password" placeholder="password" name="password" required style="width: 100%; margin: 10px 5px;">
+        <h1 class="fbimage">Tiudo- Login</h1>
 
-            <input type="submit" value="Login" style="width: 100%; margin: 10px 5px;" class="btn-primary">
+        <%= locals.errorMessage %>
 
-            <a href="/register" style="text-decoration: none; ">Don't Have account?</a>
-        </form>
+            <form method="POST">
+
+
+                <input type="email" placeholder="email" name="email" required class="input"
+                    style="text-transform: lowercase;">
+
+                <input type=" password" placeholder="Password" class="input" name="password" required>
+
+                <input type="submit" value="Log In" class="btn btn-primary input-button">
+
+
+            </form>
+
+            <p class="or">or</p>
+
+
+            <a href="/register" style="text-decoration: none; "><button type="button"
+                    class="btn btn-success button">Create New Account</button> </a>
 
 
     </div>

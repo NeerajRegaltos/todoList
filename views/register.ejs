@@ -12,29 +12,38 @@
 
     <title>Tiudo - Register</title>
     <link rel="shortcut icon" href="/logo.png" type="image/x-icon">
+    <link rel="stylesheet" href="/css/register.css">
 </head>
 
-<body style="background-color: rgb(98, 238, 203);">
-    <div class="container" style="display: flex; justify-content: center; margin-top: 20px;">
+<body >
+    <div class="container flex">
 
-        <form method="post" style="display: flex; flex-direction: column;">
-            <h1>Register</h1>
+        <h1>Tiudo-Register</h1>
 
-            <p>
-                <%= locals.errorMessage %>
-            </p>
+        <p>
+            <%= locals.errorMessage %>
+        </p>
+        <form method="post">
 
-            <input type="email" placeholder="email" name="email" required
-                style="text-transform: lowercase; width: 100%; margin: 10px 5px;">
-            <input type="password" placeholder="password" name="password" required
-                style="width: 100%; margin: 10px 5px;" id="password">
-            <input type="password" placeholder="Confirm password" required style="width: 100%; margin: 10px 5px;"
-                id="confPassword">
 
-            <input type="submit" value="Register" style="width: 100%; margin: 10px 5px;" class="btn-primary">
 
-            <a href="/login" style="text-decoration: none; ">Have an account?</a>
+            <input type="email" placeholder="email" name="email" required class="input"
+                style="text-transform: lowercase;">
+
+            <input type=" password" placeholder="Password" class="input" name="password" required id="password">
+
+
+            <input type="password" placeholder="Confirm password" required id="confPassword" class="input">
+
+            <input type="submit" value="Register" class="btn btn-primary input-button">
+
         </form>
+        <p class="or">or</p>
+
+
+        <a href="/login" style="text-decoration: none; "><button type="button" class="btn btn-success button">Already
+                have Account?</button> </a>
+
 
 
     </div>
