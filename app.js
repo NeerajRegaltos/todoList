@@ -19,7 +19,6 @@ app.use(session({
     secret: "ILoveyouKajal",
     resave: true,
     saveUninitialized: false,
-    cookie: { secure: true }
 }))
 
 //Mongoose connected with mongoDB
@@ -177,7 +176,7 @@ app.get("/:customListName/", requireLogin, function (req, res) {
                 res.redirect("/" + req.session.user._id);
             } else {
                 //show an existing list
-                
+
                 res.render("list", { listTitle: foundList.name, newListItems: foundList.items })
             }
         }
