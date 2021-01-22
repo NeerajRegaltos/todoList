@@ -4,19 +4,25 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const mongoose = require("mongoose");
 const _ = require("lodash");
+const session = require("express-session");
+const bcrypt = require("bcryptjs");
+const { requireLogin } = require("./middleware");
 
 
 const app = express();
 app.set("view engine", "ejs");
-app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.urlencoded({ extended: false }));
 
 app.use(express.static("public"));
 
+app.use(session({
+    secret: "ILoveyouKajal",
+    resave: true,
+    saveUninitialized: false,
+}))
+
 //Mongoose connected with mongoDB
-mongoose.connect("mongodb+srv://admin-neeraj:test@todolist.rqjug.mongodb.net/todoListDB", {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-});
+mongoose.connect("mongodb+srv://admin-neeraj:test@todolist.rqjug.mongodb.net/todoListDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
 
 //mongoose Schema
 const itemsSchema = {
@@ -48,10 +54,112 @@ const listSchema = {
 
 const List = mongoose.model("List", listSchema);
 
+const UserSchema = {
+    email: {
+        type: String,
+        unique: true,
+        trim: true,
+    },
+    password: {
+        type: String
+    },
+    items: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]
+}
+
+const User = mongoose.model("User", UserSchema);
+
+app.get("/", (req, res) => {
+    if (req.session && req.session.user) {
+        console.log(req.session.user);
+    }
+    res.redirect("/login");
+})
+
+app.get("/login", (req, res) => {
+    res.render("login");
+});
+
+app.post("/login", async (req, res) => {
+    const email = req.body.email.trim();
+    const password = req.body.password;
+
+    if (email && password) {
+
+        const user = await User.findOne({ email })
+            .catch(error => {
+                console.log(error);
+
+                var errorMessage = "Something Went Wrong.";
+                res.render("login", { errorMessage });
+            });
+
+        if (user !== null) {
+            var result = await bcrypt.compare(password, user.password)
+            if (result === true) {
+                //correct password
+                req.session.user = user
+                return res.redirect(`/${req.session.user._id}`);
+            }
+        }
+        var errorMessage = "Credentials incorrect.";
+        res.render("login", { errorMessage });
+    }
+    var errorMessage = "Make sure each field has correct values.";
+    return res.render("login", { errorMessage });
+});
 
 
-app.get("/:customListName/", function (req, res) {
-    const customListName = _.capitalize(req.params.customListName);
+
+
+app.get("/register", (req, res) => {
+    res.render("register");
+});
+app.post("/register", async (req, res) => {
+    const email = req.body.email.trim();
+    const password = req.body.password;
+
+    if (password && email) {
+        const user = await User.findOne({ email })
+            .catch(error => {
+                console.log(error);
+                var errorMessage = "Something Went Wrong";
+                res.status(200).render("register");
+            });
+        if (user === null) {
+            //user not found
+            var data = req.body;
+
+            data.password = await bcrypt.hash(password, 10);
+
+            User.create(data)
+                .then(user => {
+                    req.session.user = user;
+                    return res.redirect(`/login`);
+                })
+
+        } else {
+            //user found
+            if (email === user.email) {
+                var errorMessage = "Email Already in use";
+            }
+            res.status(200).render("register", { errorMessage });
+        }
+    }
+    else {
+        var errorMessage = "Make sure each field has valid value";
+        res.status(200).render("register", { errorMessage });
+    }
+
+
+});
+
+app.get("/logout", (req, res) => {
+    req.session.destroy();
+    res.redirect("/login");
+})
+
+app.get("/:customListName/", requireLogin, function (req, res) {
+    const customListName = _.capitalize(req.session.user.email);
 
     List.findOne({ name: customListName }, function (err, foundList) {
         if (!err) {
@@ -75,32 +183,29 @@ app.get("/:customListName/", function (req, res) {
 
 
 
-app.get("/", function (req, res) {
+// app.get("/", requireLogin, function (req, res) {
 
-    Item.find({}, function (err, foundItems) {
-        if (err) {
-            console.log(err);
-        }
-        else {
-            if (foundItems.length === 0) {
+//     Item.find({}, function (err, foundItems) {
+//         if (err) {
+//             console.log(err);
+//         }
+//         else {
 
-                Item.insertMany(defaulItems, function (err) {
-                    if (err) {
-                        console.log(err);
-                    } else {
-                        console.log("Succesfully added");
-                    }
-                });
-                res.redirect("/");
-            } else {
-                res.render("list", { listTitle: "Today", newListItems: foundItems });
-
-            }
-
-        }
-    });
-
-});
+//             if (foundItems.length === 0) {
+//                 Item.insertMany(defaulItems, function (err) {
+//                     if (err) {
+//                         console.log(err);
+//                     } else {
+//                         console.log("Succesfully added");
+//                     }
+//                 });
+//                 res.redirect("/");
+//             } else {
+//                 res.render("list", { listTitle: "Today", newListItems: foundItems });
+//             }
+//         }
+//     });
+// });
 
 app.post("/", function (req, res) {
 
@@ -122,8 +227,6 @@ app.post("/", function (req, res) {
             res.redirect("/" + listName);
         });
     }
-
-
 });
 
 app.post("/delete/", function (req, res) {
@@ -151,6 +254,12 @@ app.post("/delete/", function (req, res) {
 
 
 
+
+
+
+
+
+
 app.get("/about/", function (req, res) {
     res.render("about");
 });
@@ -158,6 +267,12 @@ app.get("/about/", function (req, res) {
 app.get("/*", function (req, res) {
     res.send("<h1> Please Go Back This is not the Page you are looking for</h1>");
 });
+
+
+
+
+
+
 
 let port = process.env.PORT;
 if (port == null || port == "") {
