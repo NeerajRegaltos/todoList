@@ -19,6 +19,7 @@ app.use(session({
     secret: "ILoveyouKajal",
     resave: true,
     saveUninitialized: false,
+    cookie: { secure: true }
 }))
 
 //Mongoose connected with mongoDB
