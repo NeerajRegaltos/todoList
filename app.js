@@ -70,9 +70,11 @@ const User = mongoose.model("User", UserSchema);
 
 app.get("/", (req, res) => {
     if (req.session && req.session.user) {
-        console.log(req.session.user);
+        res.redirect(`/${req.session.user._id}`)
+    } else {
+        res.redirect("/login");
     }
-    res.redirect("/login");
+
 })
 
 app.get("/login", (req, res) => {
@@ -159,7 +161,8 @@ app.get("/logout", (req, res) => {
 })
 
 app.get("/:customListName/", requireLogin, function (req, res) {
-    const customListName = _.capitalize(req.session.user.email);
+    const customListName = _.capitalize(req.session.user.
+        _id);
 
     List.findOne({ name: customListName }, function (err, foundList) {
         if (!err) {
@@ -170,9 +173,10 @@ app.get("/:customListName/", requireLogin, function (req, res) {
                     items: defaulItems
                 });
                 list.save();
-                res.redirect("/" + customListName);
+                res.redirect("/" + req.session.user._id);
             } else {
                 //show an existing list
+                
                 res.render("list", { listTitle: foundList.name, newListItems: foundList.items })
             }
         }
@@ -238,7 +242,7 @@ app.post("/delete/", function (req, res) {
                 console.log(err);
             } else {
                 console.log("Deleted Succesfully");
-                res.redirect("/");
+                res.redirect(`/${req.session.user._id}`);
             }
         });
     } else {
