@@ -19,7 +19,7 @@ app.use(session({
     secret: "ILoveyouKajal",
     resave: true,
     saveUninitialized: false,
-}))
+}));
 
 //Mongoose connected with mongoDB
 mongoose.connect("mongodb+srv://admin-neeraj:test@todolist.rqjug.mongodb.net/todoListDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
@@ -59,9 +59,12 @@ const UserSchema = {
         type: String,
         unique: true,
         trim: true,
+        lowercase: true,
+        required: true
     },
     password: {
-        type: String
+        type: String,
+        required: true
     },
     items: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Item' }]
 }
@@ -119,16 +122,22 @@ app.get("/register", (req, res) => {
 app.post("/register", async (req, res) => {
     const email = req.body.email.trim();
     const password = req.body.password;
+    const confPassword = req.body.confPassword;
 
-    if (password && email) {
+    if (email && password && confPassword) {
+        if (password !== confPassword) {
+            var errorMessage = "Passwords Do not match";
+            return res.status(200).render("register", { email, errorMessage, title: "Register" });
+        }
+
         const user = await User.findOne({ email })
             .catch(error => {
                 console.log(error);
-                var errorMessage = "Something Went Wrong";
-                res.status(200).render("register");
+                var errorMessage = "Something went Wrong";
+                res.status(200).render("register", { email, errorMessage, title: "Register" });
             });
+
         if (user === null) {
-            //user not found
             var data = req.body;
 
             data.password = await bcrypt.hash(password, 10);
@@ -136,20 +145,20 @@ app.post("/register", async (req, res) => {
             User.create(data)
                 .then(user => {
                     req.session.user = user;
-                    return res.redirect(`/login`);
-                })
-
-        } else {
-            //user found
-            if (email === user.email) {
-                var errorMessage = "Email Already in use";
-            }
-            res.status(200).render("register", { errorMessage });
+                    return res.redirect("/login");
+                });
         }
+        else {
+            if (email === user.email) {
+                var errorMessage = "Email already in use";
+            }
+            res.status(200).render("register", { errorMessage, title: "Register" });
+        }
+
     }
     else {
-        var errorMessage = "Make sure each field has valid value";
-        res.status(200).render("register", { errorMessage });
+        var errorMessage = "Make sure each field is filled";
+        res.status(200).render("register", { email, errorMessage, title: "Register" });
     }
 
 
