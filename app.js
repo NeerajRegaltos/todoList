@@ -122,22 +122,16 @@ app.get("/register", (req, res) => {
 app.post("/register", async (req, res) => {
     const email = req.body.email.trim();
     const password = req.body.password;
-    const confPassword = req.body.confPassword;
 
-    if (email && password && confPassword) {
-        if (password !== confPassword) {
-            var errorMessage = "Passwords Do not match";
-            return res.status(200).render("register", { email, errorMessage, title: "Register" });
-        }
-
+    if (password && email) {
         const user = await User.findOne({ email })
             .catch(error => {
                 console.log(error);
-                var errorMessage = "Something went Wrong";
-                res.status(200).render("register", { email, errorMessage, title: "Register" });
+                var errorMessage = "Something Went Wrong";
+                res.status(200).render("register");
             });
-
         if (user === null) {
+            //user not found
             var data = req.body;
 
             data.password = await bcrypt.hash(password, 10);
@@ -145,20 +139,20 @@ app.post("/register", async (req, res) => {
             User.create(data)
                 .then(user => {
                     req.session.user = user;
-                    return res.redirect("/login");
-                });
-        }
-        else {
-            if (email === user.email) {
-                var errorMessage = "Email already in use";
-            }
-            res.status(200).render("register", { errorMessage, title: "Register" });
-        }
+                    return res.redirect(`/login`);
+                })
 
+        } else {
+            //user found
+            if (email === user.email) {
+                var errorMessage = "Email Already in use";
+            }
+            res.status(200).render("register", { errorMessage });
+        }
     }
     else {
-        var errorMessage = "Make sure each field is filled";
-        res.status(200).render("register", { email, errorMessage, title: "Register" });
+        var errorMessage = "Make sure each field has valid value";
+        res.status(200).render("register", { errorMessage });
     }
 
 
