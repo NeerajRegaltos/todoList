@@ -19,14 +19,14 @@
                         <%= item.name %>
                     </p>
                 </div>
-                <input type="hidden" name="listName" value="<%= listTitle %>" required> </input>
+                <input type="hidden" name="listName" value="<%= listTitle %>"> </input>
             </form>
 
             <% }); %>
 
 
                 <form class="item" action="/" method="post">
-                    <input autofocus name="newItem" type="text" placeholder="Enter your todo" autocomplete="off">
+                    <input autofocus name="newItem" type="text" placeholder="Enter your todo" autocomplete="off" required>
                     <button type="submit" name="list" value=<%=listTitle %>>+</button>
                 </form>
     </div>
