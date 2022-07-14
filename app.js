@@ -7,6 +7,7 @@ const _ = require("lodash");
 const session = require("express-session");
 const bcrypt = require("bcryptjs");
 const { requireLogin } = require("./middleware");
+const { connect } = require("mongoose");
 
 
 const app = express();
@@ -22,8 +23,11 @@ app.use(session({
 }));
 
 //Mongoose connected with mongoDB
-mongoose.connect("mongodb+srv://admin-neeraj:test@todolist.rqjug.mongodb.net/todoListDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true });
-
+mongoose.connect("mongodb+srv://admin-neeraj:fZIoxQHRDE07Q19s@todolist.rqjug.mongodb.net/todoListDB", { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }).then(() => {
+    console.log("DataBase Connected");
+}).catch(err => {
+    console.log("ERROR =-->", err);
+})
 //mongoose Schema
 const itemsSchema = {
     name: String
